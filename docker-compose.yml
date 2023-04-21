@@ -1,0 +1,61 @@
+version: "3.8"
+
+networks:
+  components:
+    name: ds-components
+
+services:
+  # Rabbit MQ
+  messagequeue:
+    container_name: "messagequeue"
+    image: rabbitmq:3.8-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=rmq
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+    networks:
+      - components
+
+  # Service Registry
+  registry:
+    container_name: service-registry
+    build:
+      context: serviceregistry
+    ports:
+      - "9010:9010"
+    networks:
+      - components
+
+  # API Gateway
+  gateway:
+    container_name: gateway
+    build:
+      context: gateway
+    environment:
+      eureka.client.service-url.defaultZone: "http://registry:9010/eureka/"
+    ports:
+      - "9000:9000"
+    depends_on:
+      - registry
+    networks:
+      - components
+
+  # Restservice
+  rest-service:
+    build:
+      context: restservice
+    environment:
+      eureka.client.service-url.defaultZone: "http://registry:9010/eureka/"
+      spring.rabbitmq.host: "messagequeue"
+    restart: always
+    deploy:
+      replicas: 2
+    depends_on:
+      - registry
+      - messagequeue
+    networks:
+      - components
