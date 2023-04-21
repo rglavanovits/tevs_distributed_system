@@ -13,4 +13,9 @@ Rest service is running on a random port. It can be started in multiple instance
 In order to start the application, the `docker-compose.yml` can be used. It includes all necessery containers (RabbitMQ, Registry, Gateway, Restservice).
 It can be built with `docker compose build` and started with `docker compose up`.
 
-Beforehand the single applications must be built. Either with `mvn clean package install` in each directory or with by executing the `build.sh` script. 
+Beforehand the single applications must be built. Either with `mvn clean package install` in each directory or with by executing the `build.sh` script.
+
+## Startup Order
+1. Execute `build.sh`
+2. Execute 'docker compose build'
+3. Execute 'docker compose up'
